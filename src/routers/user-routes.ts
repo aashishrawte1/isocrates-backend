@@ -2,6 +2,7 @@ import express from "express";
 import multer from 'multer';
 import { getAnalytics } from "../controllers/analytics-controller.controller";
 import { forgetPassword, loginController, registerController, resetPassword } from "../controllers/auth-controller.controller";
+import { authenticateToken } from "../middleware/authMiddleware";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -22,6 +23,6 @@ const routes = {
 server.post(routes.register, upload.single('file'), registerController);
 server.get(routes.login, loginController);
 // server.get(routes["user-activity"], authenticateToken, userActivityController)
-server.post(routes['login-analytics'], upload.single('file'), getAnalytics);
+server.post(routes['login-analytics'], authenticateToken, upload.single('file'), getAnalytics);
 server.post(routes['forget-password'], forgetPassword)
 server.post(routes['reset-password'], resetPassword);

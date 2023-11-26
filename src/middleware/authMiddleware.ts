@@ -16,7 +16,7 @@ function authenticateToken(req, res, next: NextFunction): void {
     }
 
     req.user = user;
-    next();
+    next(true);
   });
 }
 
