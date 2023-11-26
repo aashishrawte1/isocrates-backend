@@ -51,7 +51,7 @@ export const getAnalytics = async (req, res) => {
     // Calculate users who did not log in on each date
     Object.keys(dayWiseData).forEach((date) => {
       const usersWhoDidNotLog = new Set(userData.map((user) => user.email));
-      usersWhoLogged.forEach((userEmail) => {
+      usersWhoLogged.forEach((userEmail: string) => {
         usersWhoDidNotLog.delete(userEmail);
       });
       dayWiseData[date].usersNotLogged = usersWhoDidNotLog.size;

@@ -9,6 +9,7 @@ export interface User {
   userType: string;
   lastLogin: number | null;
   loginHistory?: number[];
+  token?: string;
 }
 
 const userSchema = new mongoose.Schema<User>({

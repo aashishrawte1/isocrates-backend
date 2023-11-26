@@ -6,7 +6,7 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "types": ["node", "mongoose"],
+    "types": ["node"],
   },
   "lib": ["es2015"]
 }

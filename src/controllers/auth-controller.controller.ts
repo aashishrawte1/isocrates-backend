@@ -4,6 +4,16 @@ import jwt from 'jsonwebtoken';
 import { checkIfUserExists } from '../functions/user-helper';
 import UserModel from '../models/userModel';
 import { connect } from '../utils/db.util';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'aashishrawte1@gmail.com',
+    pass: 'aashish1997*#',
+  },
+});
 
 export const registerController = async (req, res) => {
     const userData = req.body;
@@ -88,5 +98,65 @@ export const loginController = async(req, res) => {
   } catch (error) {
     console.error('Error logging in user:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+export const forgetPassword = async(req, res) => {
+  console.log(req.body.email);
+  const email = req.body.email;
+    
+  try {
+    const user = await UserModel.findOne({ email }).maxTimeMS(20000);
+    console.log('user', user);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const resetToken = jwt.sign({ userId: user._id, email: user.email }, 'yourSecretKey', { expiresIn: '1h' });
+
+    const resetLink = `http://localhost:4200/reset-password/${resetToken}`;
+    const mailOptions = {
+      from: 'aashishrawte1@gmail.com',
+      to: email,
+      subject: 'Password Reset',
+      text: `Click on the following link to reset your password: ${resetLink} <br/> link is only valid for 10 minutes`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(500).json({ message: 'Failed to send email' });
+      } else {
+        console.log(info);
+      }
+      
+      return res.json({ message: 'Email sent with reset instructions' });
+    });
+
+  } catch (error) {
+    console.error(error);
+  }
+
+}
+
+export const resetPassword = async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+
+  try {
+    const decodedToken = jwt.verify(resetToken, 'yourSecretKey');
+    const user = await UserModel.findById(decodedToken.userId);
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid token or user not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await UserModel.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+    });
+
+    res.json({ message: 'Password reset successfully' });
+
+  } catch (error) {
+    return res.status(400).json({ message: 'Invalid or expired token' });
+    console.error(error);
   }
 }
